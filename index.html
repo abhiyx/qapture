@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact to Google Sheets</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f0f2f5;
+            font-family: -apple-system, system-ui, sans-serif;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .instructions {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 0px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0px;
+            font-weight: 0;
+            font-size: 0px;
+        }
+
+        input {
+            width: 100%;
+            padding: 0px;
+            border: 0px solid white;
+            border-radius: 0px;
+            box-sizing: border-box;
+            color: white;
+            background-color: white;
+        }
+
+        .submit-btn, .share-btn {
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .submit-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        #loading {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+            color: white;
+        }
+
+        /* Styling to keep buttons adjacent */
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .button-container button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="instructions">
+            <strong>Instructions:</strong><br><br>
+            - Click Upload your contact <br><br>
+- Allow the browser to access your contacts <br><br>
+- Your contacts will open on your phone  <br><br>
+- Wait 5-10 seconds for your contacts to load <br><br>
+- Select your details (your contact details are pinned at the top) <br><br>
+- Click Done to return to this page <br><br>
+- Click Submit to share your contact with us 
+
+
+
+
+
+
+
+
+        </div>
+
+        <form id="contactForm" onsubmit="submitForm(event)">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email">
+            </div>
+
+            <!-- Buttons are adjacent -->
+            <div class="button-container">
+                <button type="button" class="share-btn" onclick="openContactPicker()">Upload your contact</button>
+                <button type="submit" class="submit-btn">Submit</button>
+            </div>
+        </form>
+
+        <div id="loading">Submitting...</div>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        async function submitForm(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.querySelector('.submit-btn');
+            const loadingDiv = document.getElementById('loading');
+            const statusDiv = document.getElementById('status');
+            submitBtn.disabled = true;
+            loadingDiv.style.display = 'block';
+            statusDiv.style.display = 'none';
+
+            const formData = new FormData(document.getElementById('contactForm'));
+            const url = "https://script.google.com/macros/s/AKfycby2nZzpfxvjv6J1Ql1DxzIkt1KTlWAE5Q5yYjkZ8UYqbVmfOyt6JQc82VU1PNjfNdIw/exec";
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const text = await response.text();
+                console.log("Response:", text);
+
+                if (response.ok) {
+                    showStatus("Data submitted successfully!", true);
+                    document.getElementById('contactForm').reset();
+                } else {
+                    throw new Error("Submission failed");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                showStatus("Error submitting data. Try again.", false);
+            } finally {
+                submitBtn.disabled = false;
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status ' + (isSuccess ? 'success' : 'error');
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function openContactPicker() {
+            if (navigator.contacts && navigator.contacts.select) {
+                navigator.contacts.select(['name', 'tel', 'email'], { multiple: false })
+                    .then(contacts => {
+                        if (contacts.length > 0) {
+                            const contact = contacts[0];
+                            document.getElementById('phone').value = contact.tel && contact.tel.length > 0 ? contact.tel[0] : '';
+                            document.getElementById('name').value = contact.name && contact.name.length > 0 ? contact.name[0] : '';
+                            document.getElementById('email').value = contact.email && contact.email.length > 0 ? contact.email[0] : '';
+                        }
+                    })
+                    .catch(error => console.error("Error fetching contacts:", error));
+            } else {
+                alert("Contact Picker API is not supported on this device.");
+            }
+        }
+    </script>
+</body>
+</html>
