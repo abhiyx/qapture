@@ -107,9 +107,62 @@
         .button-container button {
             flex: 1;
         }
+        .header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: left;
+}
+.footer {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+}
+
+.footer a {
+    color: #0066ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
     </style>
+    <!-- Firebase SDK -->
+<script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+    // Firebase Configuration (Replace with your actual values if different)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAAj-4Aam5P8dg7DeyR_jAiDBiH0W7xIT8",
+        authDomain: "sampleproject-5234f.firebaseapp.com",
+        projectId: "sampleproject-5234f",
+        storageBucket: "sampleproject-5234f.firebasestorage.app",
+        messagingSenderId: "73384704943",
+        appId: "1:73384704943:web:397285ecc1b86d5cd54d5a",
+        measurementId: "G-TH1F1J73CK"
+    };
+
+    // Initialize Firebase and Analytics
+    const app = initializeApp(firebaseConfig);
+    window.analytics = getAnalytics(app); // ✅ Store analytics in window for global access
+    window.logEvent = logEvent; // ✅ Store logEvent globally
+</script>
+
 </head>
 <body>
+    <!-- Header -->
+<div class="header">
+    Hey there! 👋 
+    <br>Thanks for connecting with WeCraft Studio!
+</div>
+
     <div class="container">
         <div class="instructions">
             <strong>Instructions:</strong><br><br>
@@ -154,44 +207,54 @@
         <div id="loading">Submitting...</div>
         <div id="status" class="status"></div>
     </div>
+<!-- Footer -->
+<div class="footer">
+    Powered by <a href="https://qapture.com/about" target="_blank" onclick="trackQaptureClick()">Qapture</a> – Enabling seamless digital connections while reducing paper waste. Let’s go green together! 🌱
+</div>
 
     <script>
-        async function submitForm(event) {
-            event.preventDefault();
-            
-            const submitBtn = document.querySelector('.submit-btn');
-            const loadingDiv = document.getElementById('loading');
-            const statusDiv = document.getElementById('status');
-            submitBtn.disabled = true;
-            loadingDiv.style.display = 'block';
-            statusDiv.style.display = 'none';
+       async function submitForm(event) {
+    event.preventDefault();
+    
+    const submitBtn = document.querySelector('.submit-btn');
+    const loadingDiv = document.getElementById('loading');
+    const statusDiv = document.getElementById('status');
+    submitBtn.disabled = true;
+    loadingDiv.style.display = 'block';
+    statusDiv.style.display = 'none';
 
-            const formData = new FormData(document.getElementById('contactForm'));
-            const url = "https://script.google.com/macros/s/AKfycby2nZzpfxvjv6J1Ql1DxzIkt1KTlWAE5Q5yYjkZ8UYqbVmfOyt6JQc82VU1PNjfNdIw/exec";
-            
-            try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    body: formData
-                });
+    const formData = new FormData(document.getElementById('contactForm'));
+    const url = "https://script.google.com/macros/s/AKfycby2nZzpfxvjv6J1Ql1DxzIkt1KTlWAE5Q5yYjkZ8UYqbVmfOyt6JQc82VU1PNjfNdIw/exec";
 
-                const text = await response.text();
-                console.log("Response:", text);
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            body: formData
+        });
 
-                if (response.ok) {
-                    showStatus("Data submitted successfully!", true);
-                    document.getElementById('contactForm').reset();
-                } else {
-                    throw new Error("Submission failed");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                showStatus("Error submitting data. Try again.", false);
-            } finally {
-                submitBtn.disabled = false;
-                loadingDiv.style.display = 'none';
-            }
+        const text = await response.text();
+        console.log("Response:", text);
+
+        if (response.ok) {
+            showStatus("Data submitted successfully!", true);
+            document.getElementById('contactForm').reset();
+
+            // ✅ Log form submission event to Firebase Analytics
+            logEvent(window.analytics, "form_submission", {
+                category: "Contact Form",
+                label: "User submitted contact info"
+            });
+        } else {
+            throw new Error("Submission failed");
         }
+    } catch (error) {
+        console.error("Error:", error);
+        showStatus("Error submitting data. Try again.", false);
+    } finally {
+        submitBtn.disabled = false;
+        loadingDiv.style.display = 'none';
+    }
+}
 
         function showStatus(message, isSuccess) {
             const statusDiv = document.getElementById('status');
@@ -212,13 +275,31 @@
                             document.getElementById('phone').value = contact.tel && contact.tel.length > 0 ? contact.tel[0] : '';
                             document.getElementById('name').value = contact.name && contact.name.length > 0 ? contact.name[0] : '';
                             document.getElementById('email').value = contact.email && contact.email.length > 0 ? contact.email[0] : '';
+
+                                // ✅ Log contact upload event to Firebase Analytics
+                    logEvent(window.analytics, "contact_upload", {
+                        category: "Contact Picker",
+                        label: "User uploaded contact info"
+                    });
                         }
                     })
                     .catch(error => console.error("Error fetching contacts:", error));
             } else {
+                    // ✅ Log contact upload event to Firebase Analytics
+                    logEvent(analytics, "contact_upload_failed", {
+                        category: "Contact Picker",
+                        label: "Contact Picker API is not supported on this device."
+                    });
                 alert("Contact Picker API is not supported on this device.");
             }
         }
+        function trackQaptureClick() {
+    logEvent(window.analytics, "qapture_click", {
+        category: "External Link",
+        label: "User clicked Qapture link"
+    });
+}
+
     </script>
 </body>
 </html>
