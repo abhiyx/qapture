@@ -217,48 +217,23 @@
 </div>
 
     <script>
-       async function submitForm(event) {
-    event.preventDefault();
-    
-    const submitBtn = document.querySelector('.submit-btn');
-    const loadingDiv = document.getElementById('loading');
-    const statusDiv = document.getElementById('status');
-    submitBtn.disabled = true;
-    loadingDiv.style.display = 'block';
-    statusDiv.style.display = 'none';
-
-    const formData = new FormData(document.getElementById('contactForm'));
-    const url = "https://script.google.com/macros/s/AKfycby2nZzpfxvjv6J1Ql1DxzIkt1KTlWAE5Q5yYjkZ8UYqbVmfOyt6JQc82VU1PNjfNdIw/exec";
-
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            body: formData
-        });
-
-        const text = await response.text();
-        console.log("Response:", text);
-
-        if (response.ok) {
-            showStatus("Data submitted successfully!", true);
-            document.getElementById('contactForm').reset();
-
-            // ✅ Log form submission event to Firebase Analytics
-            logEvent(window.analytics, "form_submission", {
-                category: "Contact Form",
-                label: "User submitted contact info"
-            });
-        } else {
-            throw new Error("Submission failed");
+       function submitForm(event) {
+        event.preventDefault();
+        
+        let name = document.getElementById('name').value.trim();
+        let email = document.getElementById('email').value.trim();
+        const phone = "918920557826"; // Replace with the target WhatsApp number
+        let message = `Hi Ankur(wecraft studio), feel free to contact me. My name is ${name}, and my email is ${email}.`;
+        if (!name || !email) {
+             message = `Hi Ankur(wecraft studio), Nice to connect with you.`;
+            
         }
-    } catch (error) {
-        console.error("Error:", error);
-        showStatus("Error submitting data. Try again.", false);
-    } finally {
-        submitBtn.disabled = false;
-        loadingDiv.style.display = 'none';
+
+        
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+
+        window.location.href = whatsappUrl; // Redirect to WhatsApp
     }
-}
 
         function showStatus(message, isSuccess) {
             const statusDiv = document.getElementById('status');
