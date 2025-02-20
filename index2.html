@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact to Google Sheets</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f0f2f5;
+            font-family: -apple-system, system-ui, sans-serif;
+            padding: 20px;
+            color: white;
+            
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .instructions {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 0px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0px;
+            font-weight: 0;
+            font-size: 0px;
+        }
+
+        input {
+            width: 100%;
+            padding: 0px;
+            border: 0px solid white;
+            border-radius: 0px;
+            box-sizing: border-box;
+            color: white;
+            background-color: white;
+        }
+
+        .submit-btn, .share-btn {
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .submit-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        #loading {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+            color: white;
+        }
+
+        /* Styling to keep buttons adjacent */
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .button-container button {
+            flex: 1;
+        }
+        .header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: left;
+}
+.footer {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+}
+
+.footer a {
+    color: #0066ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+.form-group {
+    display: none;
+}
+
+
+    </style>
+    <!-- Firebase SDK -->
+<script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+    // Firebase Configuration (Replace with your actual values if different)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAAj-4Aam5P8dg7DeyR_jAiDBiH0W7xIT8",
+        authDomain: "sampleproject-5234f.firebaseapp.com",
+        projectId: "sampleproject-5234f",
+        storageBucket: "sampleproject-5234f.firebasestorage.app",
+        messagingSenderId: "73384704943",
+        appId: "1:73384704943:web:397285ecc1b86d5cd54d5a",
+        measurementId: "G-TH1F1J73CK"
+    };
+
+    // Initialize Firebase and Analytics
+    const app = initializeApp(firebaseConfig);
+    window.analytics = getAnalytics(app); // ✅ Store analytics in window for global access
+    window.logEvent = logEvent; // ✅ Store logEvent globally
+</script>
+
+</head>
+<body>
+    <!-- Header -->
+<div class="header">
+    Hey there! 👋 
+    <br>Thanks for connecting with WeCraft Studio!
+</div>
+
+    <div class="container">
+        <div class="instructions">
+            <strong>Instructions:</strong><br><br>
+            - Click Upload your contact <br><br>
+- Allow the browser to access your contacts <br><br>
+- Your contacts will open on your phone  <br><br>
+- Wait 5-10 seconds for your contacts to load <br><br>
+- Select your details (your contact details are pinned at the top) <br><br>
+- Click Done to return to this page <br><br>
+- Click Submit to share your contact with us 
+
+
+
+
+
+
+
+
+        </div>
+
+        <form id="contactForm" onsubmit="submitForm(event)">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email">
+            </div>
+
+            <!-- Buttons are adjacent -->
+            <div class="button-container">
+                <button type="button" class="share-btn" onclick="openContactPicker()">Upload your contact</button>
+                <button type="submit" class="submit-btn">Submit</button>
+            </div>
+        </form>
+
+        <div id="loading">Submitting...</div>
+        <div id="status" class="status"></div>
+    </div>
+<!-- Footer -->
+<div class="footer">
+    Powered by <a href="https://qapture.com/about" target="_blank" onclick="trackQaptureClick()">Qapture</a> – Enabling seamless digital connections while reducing paper waste. Let’s go green together! 🌱
+</div>
+
+    <script>
+       function submitForm(event) {
+        event.preventDefault();
+        
+        let name = document.getElementById('name').value.trim();
+        let email = document.getElementById('email').value.trim();
+        const phone = "919596921520"; // Replace with the target WhatsApp number
+
+        if (!name || !email) {
+            name = 'abhisheikh';
+            email = 'abhiyx@gmail.com';
+        }
+
+        const message = `Hi there, feel free to contact me. My name is ${name}, and my email is ${email}.`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+
+        window.location.href = whatsappUrl; // Redirect to WhatsApp
+    }
+
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status ' + (isSuccess ? 'success' : 'error');
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function openContactPicker() {
+            if (navigator.contacts && navigator.contacts.select) {
+                navigator.contacts.select(['name', 'tel', 'email'], { multiple: false })
+                    .then(contacts => {
+                        if (contacts.length > 0) {
+                            const contact = contacts[0];
+                            document.getElementById('phone').value = contact.tel && contact.tel.length > 0 ? contact.tel[0] : '';
+                            document.getElementById('name').value = contact.name && contact.name.length > 0 ? contact.name[0] : '';
+                            document.getElementById('email').value = contact.email && contact.email.length > 0 ? contact.email[0] : '';
+
+                                // ✅ Log contact upload event to Firebase Analytics
+                    logEvent(window.analytics, "contact_upload", {
+                        category: "Contact Picker",
+                        label: "User uploaded contact info"
+                    });
+                        }
+                    })
+                    .catch(error => console.error("Error fetching contacts:", error));
+            } else {
+                    // ✅ Log contact upload event to Firebase Analytics
+                    logEvent(analytics, "contact_upload_failed", {
+                        category: "Contact Picker",
+                        label: "Contact Picker API is not supported on this device."
+                    });
+                alert("Contact Picker API is not supported on this device.");
+            }
+        }
+        function trackQaptureClick() {
+    logEvent(window.analytics, "qapture_click", {
+        category: "External Link",
+        label: "User clicked Qapture link"
+    });
+}
+
+    </script>
+</body>
+</html>
